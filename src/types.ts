@@ -25,4 +25,8 @@ export interface SolarGenerationCardConfig {
   type: string;
   title?: string;
   entity: string;
+  /** Prognoselinie (Forecast.Solar aus dem Energie-Dashboard) anzeigen. Standard: an. */
+  forecast?: boolean;
 }
+
+export type Period = 'day' | 'week' | 'month' | 'year';
