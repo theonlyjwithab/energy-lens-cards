@@ -234,6 +234,28 @@ Gestaltung (abgestimmt):
   Aktionen brauchen Bestätigung). Schritt 6 ist daher nur *lokal* abgeschlossen — GitHub-Repo
   anlegen, Remote verknüpfen (`git remote add origin …`), pushen und den ersten Tag (`git tag
   v0.1.0 && git push --tags`) setzen bleibt eine Nutzeraktion.
+- **✅ Vollständig erledigt (2026-09-18):** Repo liegt jetzt unter
+  https://github.com/theonlyjwithab/energy-lens-cards, Remote verknüpft, gepusht, Tag `v0.1.0`
+  gesetzt. Release-Action lief erfolgreich durch (Build+Lint+Release mit `solar-cards.js`-Anhang).
+  Beim Push mit `.github/workflows/release.yml` gab es zunächst einen von GitHub abgelehnten
+  Push ("refusing to allow an OAuth App to create or update workflow … without `workflow`
+  scope") — das lag am Git Credential Manager, dessen Standard-OAuth-App keinen `workflow`-Scope
+  anfragt (bekannte GCM-Einschränkung, kein Cache-Problem — auch nach Logout/`git credential
+  reject` trat derselbe Fehler auf). Gelöst mit einem Personal Access Token (Scopes `repo` +
+  `workflow`), das beim Push anstelle des Passworts verwendet wurde.
+  Karte wurde erfolgreich über HACS (benutzerdefiniertes Repository, Kategorie Dashboard)
+  installiert und getestet. Dabei aufgetreten und gelöst: Das neu hinzugefügte Custom-Repository
+  tauchte zunächst nicht in der HACS-Such-/Downloadliste auf (auch nach Neustart von HA) — die
+  Textsuche fand nichts, manuelles Durchscrollen der Kategorie "Zum Download verfügbar" fand den
+  Eintrag aber sofort. Vermutlich ein reiner Suchindex-Lag in HACS, kein echtes Problem mit dem
+  Repository selbst.
+- **Parallelbetrieb lokal + HACS vermeiden:** Sind lokale Dev-Ressource (`http://<PC-IP>:5000/
+  solar-cards.js`) und HACS-Ressource (`/hacsfiles/energy-lens-cards/solar-cards.js`) gleichzeitig
+  als Ressourcen eingetragen, lädt der Browser beide als separate Skripte → zweiter `customElements
+  .define()`-Aufruf für dieselben Tag-Namen wirft einen Fehler ("has already been used with this
+  registry"), sichtbar in der Browser-Konsole. Immer nur eine der beiden Ressourcen gleichzeitig
+  eingetragen lassen. Nutzer pausiert Entwicklung vorerst und behält nur die HACS-Ressource;
+  lokale Ressource wurde entfernt.
 
 ## Aktueller Stand
 
