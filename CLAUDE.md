@@ -46,6 +46,7 @@ selbst und unabhängig:
    Einschränkung, siehe Stand unten)
 6. **HACS/Release-Setup** — hacs.json verfeinern, GitHub Action (Tag `v*` → Build + Release),
    README auf Deutsch mit Installationsanleitung — deckt am Ende **beide** Karten dieses Repos ab
+   ✅ lokal erledigt; GitHub-Remote anlegen + ersten Tag pushen steht noch aus (Nutzeraktion)
 
 ## Zweite Karte: Energiefluss (`energy-flow-card`)
 
@@ -193,6 +194,20 @@ Gestaltung (abgestimmt):
   wird in HA als Ressourcen-URL (`http://<PC-IP>:5000/solar-cards.js`, Typ „JavaScript-Modul“)
   eingebunden. Cache-Busting bisher manuell per Query-Parameter (`?v=`) oder Hard-Reload —
   saubere Lösung folgt mit Versionierung in Schritt 6.
+- **Release-Mechanik (Schritt 6):** `dist/` bleibt bewusst in `.gitignore` (unverändert seit
+  Projektstart) — die gebaute `solar-cards.js` wird **nicht** eingecheckt, sondern von einer
+  GitHub Action (`.github/workflows/release.yml`, Trigger: Tag `v*`) gebaut und als
+  Release-Anhang veröffentlicht. Laut HACS-Doku sucht HACS in dieser Reihenfolge nach der
+  Plugin-Datei: `dist/`-Ordner im Repo → neuestes Release → Repo-Root — da wir nichts im Repo
+  committen, greift HACS auf den Release-Anhang zu. Verwendet `softprops/action-gh-release@v2`
+  (verbreitete Community-Action) zum Erstellen des Release inkl. Datei-Anhang.
+- **Lizenz:** MIT (Nutzerentscheidung) — Standard für die meisten HA-Custom-Cards, sehr
+  permissiv. `LICENSE`-Datei mit Copyright-Jahr 2026 angelegt.
+- **GitHub-Remote/Push:** Claude hat kein GitHub-CLI (`gh`) zur Verfügung und legt auch sonst
+  keinen Remote/Repo ohne expliziten Auftrag an (Sicherheitsrichtlinie: sichtbare/externe
+  Aktionen brauchen Bestätigung). Schritt 6 ist daher nur *lokal* abgeschlossen — GitHub-Repo
+  anlegen, Remote verknüpfen (`git remote add origin …`), pushen und den ersten Tag (`git tag
+  v0.1.0 && git push --tags`) setzen bleibt eine Nutzeraktion.
 
 ## Aktueller Stand
 
