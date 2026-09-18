@@ -1,4 +1,4 @@
-import type { SolarGenerationCardConfig } from '../types';
+import type { PvEnergyDiagramConfig } from '../types';
 
 export interface EntitySlot {
   entity: string;
@@ -22,7 +22,7 @@ export interface EntitySlot {
  * Prognose wird trotzdem angezeigt"). Nach der Migration ist der Wert immer
  * explizit gesetzt, die Checkbox zeigt also den echten Zustand.
  */
-export function migrateConfig(config: SolarGenerationCardConfig): SolarGenerationCardConfig {
+export function migrateConfig(config: PvEnergyDiagramConfig): PvEnergyDiagramConfig {
   let migrated = config;
   if (migrated.entity && !migrated.entity_1) {
     migrated = { ...migrated, entity_1: migrated.entity };
@@ -31,7 +31,7 @@ export function migrateConfig(config: SolarGenerationCardConfig): SolarGeneratio
   const forecastDefault = migrated.forecast ?? true;
   const showCostDefault = migrated.show_cost ?? true;
   const hasPrice = migrated.price_per_kwh != null;
-  const patch: Partial<SolarGenerationCardConfig> = {};
+  const patch: Partial<PvEnergyDiagramConfig> = {};
 
   if (migrated.entity_1) {
     if (migrated.forecast_1 === undefined) patch.forecast_1 = forecastDefault;
@@ -58,7 +58,7 @@ export function migrateConfig(config: SolarGenerationCardConfig): SolarGeneratio
 }
 
 /** Liefert die belegten Entitäts-Slots (leere Slots werden herausgefiltert). */
-export function getEntitySlots(config: SolarGenerationCardConfig): EntitySlot[] {
+export function getEntitySlots(config: PvEnergyDiagramConfig): EntitySlot[] {
   const slots: Array<{ entity: string; name?: string; forecastFlag?: boolean; showCostFlag?: boolean }> = [
     { entity: config.entity_1 ?? '', name: config.name_1, forecastFlag: config.forecast_1, showCostFlag: config.show_cost_1 },
     { entity: config.entity_2 ?? '', name: config.name_2, forecastFlag: config.forecast_2, showCostFlag: config.show_cost_2 },

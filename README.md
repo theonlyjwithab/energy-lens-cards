@@ -4,9 +4,9 @@ Zwei eigenständige Lovelace-Karten für Home Assistant rund um eine Solaranlage
 (entwickelt für einen Anker Solix Pro 2, funktioniert aber mit jedem Setup, das
 passende Energie-Sensoren liefert):
 
-- **Solar Generation Card** — Solarerzeugung als Balkendiagramm (Tag/Woche/Monat/Jahr),
+- **PV Energy Diagram** — Solarerzeugung als Balkendiagramm (Tag/Woche/Monat/Jahr),
   mit Navigation, Prognoselinie, Tooltips und optionaler Kostenanzeige.
-- **Energy Flow Card** — zeigt, woher der Hausbedarf kommt (PV direkt / Speicher / Netz)
+- **PV Energy Flow Card** — zeigt, woher der Hausbedarf kommt (PV direkt / Speicher / Netz)
   als kombiniertes Ring- und Sankey-Diagramm, plus optionalem Kosten/Gespart-Tab.
 
 Beide Karten holen ihre Daten unabhängig voneinander direkt per Websocket
@@ -33,7 +33,7 @@ Dieses Repository ist (noch) nicht im HACS-Standardkatalog gelistet und muss als
 4. Home Assistant neu laden (Browser-Cache ggf. hart leeren)
 5. Falls die Ressource nicht automatisch eingetragen wurde: Einstellungen →
    Dashboards → oben rechts drei Punkte → Ressourcen → hinzufügen:
-   `/hacsfiles/solar-cards/solar-cards.js`, Typ **JavaScript-Modul**
+   `/hacsfiles/<Repo-Name>/solar-cards.js`, Typ **JavaScript-Modul**
 
 ## Manuelle Installation (ohne HACS)
 
@@ -42,10 +42,10 @@ Dieses Repository ist (noch) nicht im HACS-Standardkatalog gelistet und muss als
 3. Als Ressource einbinden: Einstellungen → Dashboards → ⋮ → Ressourcen → hinzufügen:
    `/local/solar-cards.js`, Typ **JavaScript-Modul**
 
-## Solar Generation Card
+## PV Energy Diagram
 
 ```yaml
-type: custom:solar-generation-card
+type: custom:pv-energy-diagram
 title: Solar
 entity_1: sensor.pv_erzeugung_taeglich
 name_1: Erzeugung
@@ -57,10 +57,10 @@ z. B. mehrere Wechselrichter/Strings) — dafür `entity_2`…`entity_5` und
 Diagrammhöhe, Strompreis) lassen sich bequem über den visuellen Editor setzen
 (Karte hinzufügen → kein YAML nötig).
 
-## Energy Flow Card
+## PV Energy Flow Card
 
 ```yaml
-type: custom:energy-flow-card
+type: custom:pv-energy-flow-card
 title: Energiefluss
 pv_entity: sensor.pv_erzeugung
 battery_charge_entity: sensor.batterie_laden

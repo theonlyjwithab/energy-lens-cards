@@ -48,7 +48,33 @@ selbst und unabhängig:
    README auf Deutsch mit Installationsanleitung — deckt am Ende **beide** Karten dieses Repos ab
    ✅ lokal erledigt; GitHub-Remote anlegen + ersten Tag pushen steht noch aus (Nutzeraktion)
 
-## Zweite Karte: Energiefluss (`energy-flow-card`)
+## Zweite Karte: PV Energy Flow (`pv-energy-flow-card`)
+
+> **Umbenennungen (Schritt 6, zwei Runden):**
+> 1. Karten-Typ hieß ursprünglich `energy-flow-card`, wurde zunächst zu `solix-flow-card`
+>    umbenannt, um Namenskollisionen mit der bekannten, existierenden HACS-Karte
+>    "energy-flow-card-plus" zu vermeiden (Custom-Element-Namen müssen instanzweit eindeutig
+>    sein, relevant falls jemand beide Karten gleichzeitig installiert).
+> 2. Nutzer gefiel `solix-flow-card` nicht mehr → zweite Umbenennung zu **`pv-energy-flow-card`**
+>    (Klasse `PvEnergyFlowCard`/`PvEnergyFlowCardEditor`, Config-Typ `PvEnergyFlowCardConfig`,
+>    Dateien `src/pv-energy-flow-card.ts`/`-editor.ts`). **Gleichzeitig** wurde dabei auch die
+>    **erste** Karte umbenannt: `solar-generation-card` → **`pv-energy-diagram`** (Klasse
+>    `PvEnergyDiagram`/`PvEnergyDiagramEditor`, Config-Typ `PvEnergyDiagramConfig`, Dateien
+>    `src/pv-energy-diagram.ts`/`-editor.ts` — vormals schlicht `src/editor.ts`).
+>
+> Alle folgenden Abschnitte referenzieren teils noch ältere Namen
+> (`energy-flow-card`/`EnergyFlowCard*`, `solix-flow-card`/`SolixFlowCard*`,
+> `solar-generation-card`/`SolarGenerationCard*`) als historischen Stand zum Zeitpunkt der
+> jeweiligen Entscheidung — die **aktuellen** Namen sind überall `pv-energy-flow-card`/
+> `PvEnergyFlowCard*` (zweite Karte) bzw. `pv-energy-diagram`/`PvEnergyDiagram*` (erste Karte).
+> Die Rendering-Modul-Namen (`src/chart/energy-flow.ts`, `EnergyFlowTotals`,
+> `renderEnergyFlowContent` usw.) wurden bewusst **nicht** umbenannt, da sie nicht als Custom
+> Element registriert werden und daher keine Kollisionsgefahr besteht.
+>
+> **Wichtig für den Nutzer:** Da `solar-generation-card` bereits aktiv im eigenen Dashboard
+> verwendet wurde, muss dort einmalig der `type:` in der Karten-YAML auf `custom:pv-energy-diagram`
+> angepasst werden (bzw. die Karte im UI-Editor neu ausgewählt werden) — sonst zeigt HA nach dem
+> nächsten Ressourcen-Update einen "Element nicht gefunden"-Fehler für die bestehende Karte.
 
 ### Projektziel
 

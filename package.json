@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Home Assistant Lovelace-Karte für Solarerzeugung als Balkendiagramm.",
+  "description": "Zwei Home-Assistant-Lovelace-Karten für Solaranlagen: Solarerzeugung als Balkendiagramm mit Prognose (PV Energy Diagram) und Energiefluss (PV/Speicher/Netz) als Ring-/Sankey-Diagramm (PV Energy Flow Card), inkl. optionaler Kostenanzeige.",
   "scripts": {
     "dev": "vite build --watch --mode development",
     "serve": "http-server dist --port 5000 --cors -c-1",

@@ -1,6 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import type { HomeAssistant, SolarGenerationCardConfig, Period } from './types';
+import type { HomeAssistant, PvEnergyDiagramConfig, Period } from './types';
 import { fetchStatistics, type StatBar } from './data/statistics';
 import { fetchSolarForecast, alignForecastToBars } from './data/forecast';
 import { getRangeForPeriod, shiftReferenceDate, RECORDER_PERIOD } from './utils/period';
@@ -9,13 +9,13 @@ import { renderChart } from './chart/bar-chart';
 import type { DateRange } from './utils/time';
 import { migrateConfig, getEntitySlots, type EntitySlot } from './utils/entities';
 import { renderPeriodHeader, periodHeaderStyles, ALL_PERIODS } from './components/period-header';
-import './editor';
+import './pv-energy-diagram-editor';
 
-@customElement('solar-generation-card')
-export class SolarGenerationCard extends LitElement {
+@customElement('pv-energy-diagram')
+export class PvEnergyDiagram extends LitElement {
   @property({ attribute: false }) public hass?: HomeAssistant;
 
-  @state() private _config?: SolarGenerationCardConfig;
+  @state() private _config?: PvEnergyDiagramConfig;
   @state() private _period: Period = 'day';
   @state() private _referenceDate: Date = new Date();
   @state() private _bars: StatBar[] = [];
@@ -27,7 +27,7 @@ export class SolarGenerationCard extends LitElement {
 
   private _fetchKey?: string;
 
-  public setConfig(config: SolarGenerationCardConfig): void {
+  public setConfig(config: PvEnergyDiagramConfig): void {
     const migrated = migrateConfig(config);
     if (getEntitySlots(migrated).length === 0) {
       throw new Error('Bitte mindestens eine Entität in der Kartenkonfiguration angeben (entity_1).');
@@ -46,13 +46,13 @@ export class SolarGenerationCard extends LitElement {
   }
 
   public static getConfigElement(): HTMLElement {
-    return document.createElement('solar-generation-card-editor');
+    return document.createElement('pv-energy-diagram-editor');
   }
 
-  public static getStubConfig(_hass: HomeAssistant, entities: string[]): SolarGenerationCardConfig {
+  public static getStubConfig(_hass: HomeAssistant, entities: string[]): PvEnergyDiagramConfig {
     const entity = entities.find((entityId) => entityId.startsWith('sensor.')) ?? '';
     return {
-      type: 'custom:solar-generation-card',
+      type: 'custom:pv-energy-diagram',
       entity_1: entity,
       title: 'Solar',
     };
@@ -434,6 +434,6 @@ export class SolarGenerationCard extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'solar-generation-card': SolarGenerationCard;
+    'pv-energy-diagram': PvEnergyDiagram;
   }
 }

@@ -23,7 +23,7 @@ export interface HomeAssistant {
 
 export type Period = 'day' | 'week' | 'month' | 'year';
 
-export interface SolarGenerationCardConfig {
+export interface PvEnergyDiagramConfig {
   type: string;
   title?: string;
   /** @deprecated Alte Einzel-Entität – wird automatisch nach `entity_1` migriert. */
@@ -67,7 +67,7 @@ export interface SolarGenerationCardConfig {
   show_cost?: boolean;
 }
 
-export interface EnergyFlowCardConfig {
+export interface PvEnergyFlowCardConfig {
   type: string;
   title?: string;
   /** PV-Erzeugung gesamt (kWh, total_increasing). */

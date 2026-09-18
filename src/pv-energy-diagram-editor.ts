@@ -1,6 +1,6 @@
 import { LitElement, html, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import type { HomeAssistant, SolarGenerationCardConfig } from './types';
+import type { HomeAssistant, PvEnergyDiagramConfig } from './types';
 import { migrateConfig } from './utils/entities';
 
 // `<ha-form>` ist ein von der HA-Frontend-Anwendung global registriertes
@@ -105,16 +105,16 @@ const LABELS: Record<string, string> = {
 };
 
 interface HaFormValueChangedDetail {
-  value: SolarGenerationCardConfig;
+  value: PvEnergyDiagramConfig;
 }
 
-@customElement('solar-generation-card-editor')
-export class SolarGenerationCardEditor extends LitElement {
+@customElement('pv-energy-diagram-editor')
+export class PvEnergyDiagramEditor extends LitElement {
   @property({ attribute: false }) public hass?: HomeAssistant;
 
-  @state() private _config?: SolarGenerationCardConfig;
+  @state() private _config?: PvEnergyDiagramConfig;
 
-  public setConfig(config: SolarGenerationCardConfig): void {
+  public setConfig(config: PvEnergyDiagramConfig): void {
     this._config = migrateConfig(config);
   }
 
@@ -144,6 +144,6 @@ export class SolarGenerationCardEditor extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'solar-generation-card-editor': SolarGenerationCardEditor;
+    'pv-energy-diagram-editor': PvEnergyDiagramEditor;
   }
 }

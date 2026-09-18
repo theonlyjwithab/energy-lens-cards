@@ -1,18 +1,18 @@
-import './solar-generation-card';
-import './energy-flow-card';
+import './pv-energy-diagram';
+import './pv-energy-flow-card';
 
 // Registrierung im Karten-Auswahldialog von Home Assistant.
 window.customCards = window.customCards || [];
 window.customCards.push(
   {
-    type: 'solar-generation-card',
-    name: 'Solar Generation Card',
+    type: 'pv-energy-diagram',
+    name: 'PV Energy Diagram',
     description: 'Zeigt die Solarerzeugung als Balkendiagramm mit Prognose.',
     preview: false,
   },
   {
-    type: 'energy-flow-card',
-    name: 'Energy Flow Card',
+    type: 'pv-energy-flow-card',
+    name: 'PV Energy Flow Card',
     description: 'Zeigt, woher der Hausbedarf kommt (PV / Speicher / Netz) als Fluss- und Ring-Diagramm.',
     preview: false,
   },

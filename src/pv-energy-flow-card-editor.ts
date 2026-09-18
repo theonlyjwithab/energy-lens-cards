@@ -1,8 +1,9 @@
 import { LitElement, html, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import type { HomeAssistant, EnergyFlowCardConfig } from './types';
+import type { HomeAssistant, PvEnergyFlowCardConfig } from './types';
 
-// Gleiches `ha-form`-Muster wie beim Editor der Solar-Karte (src/editor.ts):
+// Gleiches `ha-form`-Muster wie beim Editor der PV Energy Diagram-Karte
+// (src/pv-energy-diagram-editor.ts):
 // von der HA-Frontend-App global registriertes Formular-Element, erzeugt aus
 // einem Schema automatisch Entity-Picker, Dropdowns etc.
 
@@ -41,16 +42,16 @@ const LABELS: Record<string, string> = {
 };
 
 interface HaFormValueChangedDetail {
-  value: EnergyFlowCardConfig;
+  value: PvEnergyFlowCardConfig;
 }
 
-@customElement('energy-flow-card-editor')
-export class EnergyFlowCardEditor extends LitElement {
+@customElement('pv-energy-flow-card-editor')
+export class PvEnergyFlowCardEditor extends LitElement {
   @property({ attribute: false }) public hass?: HomeAssistant;
 
-  @state() private _config?: EnergyFlowCardConfig;
+  @state() private _config?: PvEnergyFlowCardConfig;
 
-  public setConfig(config: EnergyFlowCardConfig): void {
+  public setConfig(config: PvEnergyFlowCardConfig): void {
     this._config = config;
   }
 
@@ -80,6 +81,6 @@ export class EnergyFlowCardEditor extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'energy-flow-card-editor': EnergyFlowCardEditor;
+    'pv-energy-flow-card-editor': PvEnergyFlowCardEditor;
   }
 }

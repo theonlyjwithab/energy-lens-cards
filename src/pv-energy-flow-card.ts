@@ -1,6 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import type { HomeAssistant, EnergyFlowCardConfig, Period } from './types';
+import type { HomeAssistant, PvEnergyFlowCardConfig, Period } from './types';
 import { fetchStatistics, type StatBar } from './data/statistics';
 import { getRangeForPeriod, shiftReferenceDate, RECORDER_PERIOD } from './utils/period';
 import type { DateRange } from './utils/time';
@@ -13,7 +13,7 @@ import {
   ENERGY_FLOW_VIEW_HEIGHT,
   type EnergyFlowTotals,
 } from './chart/energy-flow';
-import './energy-flow-card-editor';
+import './pv-energy-flow-card-editor';
 
 const REQUIRED_ENTITY_FIELDS = [
   'pv_entity',
@@ -29,11 +29,11 @@ function sum(bars: StatBar[]): number {
   return bars.reduce((total, bar) => total + bar.value, 0);
 }
 
-@customElement('energy-flow-card')
-export class EnergyFlowCard extends LitElement {
+@customElement('pv-energy-flow-card')
+export class PvEnergyFlowCard extends LitElement {
   @property({ attribute: false }) public hass?: HomeAssistant;
 
-  @state() private _config?: EnergyFlowCardConfig;
+  @state() private _config?: PvEnergyFlowCardConfig;
   @state() private _period: Period = 'day';
   @state() private _referenceDate: Date = new Date();
   @state() private _totals?: FlowTotals;
@@ -43,7 +43,7 @@ export class EnergyFlowCard extends LitElement {
 
   private _fetchKey?: string;
 
-  public setConfig(config: EnergyFlowCardConfig): void {
+  public setConfig(config: PvEnergyFlowCardConfig): void {
     const missing = REQUIRED_ENTITY_FIELDS.filter((key) => !config[key]);
     if (missing.length > 0) {
       throw new Error(`Bitte folgende Entitäten in der Kartenkonfiguration angeben: ${missing.join(', ')}.`);
@@ -62,17 +62,17 @@ export class EnergyFlowCard extends LitElement {
   }
 
   public static getConfigElement(): HTMLElement {
-    return document.createElement('energy-flow-card-editor');
+    return document.createElement('pv-energy-flow-card-editor');
   }
 
-  public static getStubConfig(): EnergyFlowCardConfig {
+  public static getStubConfig(): PvEnergyFlowCardConfig {
     // Anders als bei der Solar-Karte lässt sich hier keine passende Entität
     // automatisch erraten – es braucht 5 spezifische Sensoren (PV/Batterie/
     // Netz), die sich nicht anhand des entity_id-Präfixes unterscheiden
     // lassen. Die Karte öffnet nach dem Hinzufügen direkt im Editor, wo der
     // Nutzer sie auswählt.
     return {
-      type: 'custom:energy-flow-card',
+      type: 'custom:pv-energy-flow-card',
       title: 'Energiefluss',
       pv_entity: '',
       battery_charge_entity: '',
@@ -340,6 +340,6 @@ export class EnergyFlowCard extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'energy-flow-card': EnergyFlowCard;
+    'pv-energy-flow-card': PvEnergyFlowCard;
   }
 }
