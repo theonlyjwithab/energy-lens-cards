@@ -66,3 +66,24 @@ export interface SolarGenerationCardConfig {
   /** Kostenanzeige an/aus (nur relevant, wenn price_per_kwh gesetzt ist). Standard: an. */
   show_cost?: boolean;
 }
+
+export interface EnergyFlowCardConfig {
+  type: string;
+  title?: string;
+  /** PV-Erzeugung gesamt (kWh, total_increasing). */
+  pv_entity: string;
+  /** In die Batterie geladene Energie (kWh). */
+  battery_charge_entity: string;
+  /** Aus der Batterie entladene Energie (kWh). */
+  battery_discharge_entity: string;
+  /** Aus dem Netz bezogene Energie (kWh). */
+  grid_import_entity: string;
+  /** Ins Netz eingespeiste Energie (kWh). */
+  grid_export_entity: string;
+  /** Zeitraum, mit dem die Karte beim Laden startet. Standard: 'day'. */
+  default_period?: Period;
+  /** Welche Zeiträume im Dropdown wählbar sind. Standard: alle vier. */
+  periods?: Period[];
+  /** Strompreis in €/kWh. Wenn gesetzt, erscheint ein zweiter Tab "Kosten". */
+  price_per_kwh?: number;
+}

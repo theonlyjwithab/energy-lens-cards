@@ -4,20 +4,12 @@ import type { HomeAssistant, SolarGenerationCardConfig, Period } from './types';
 import { fetchStatistics, type StatBar } from './data/statistics';
 import { fetchSolarForecast, alignForecastToBars } from './data/forecast';
 import { getRangeForPeriod, shiftReferenceDate, RECORDER_PERIOD } from './utils/period';
-import { formatRangeLabel, formatBarLabels, formatBarTooltipLabel } from './utils/format';
+import { formatBarLabels, formatBarTooltipLabel } from './utils/format';
 import { renderChart } from './chart/bar-chart';
 import type { DateRange } from './utils/time';
 import { migrateConfig, getEntitySlots, type EntitySlot } from './utils/entities';
+import { renderPeriodHeader, periodHeaderStyles, ALL_PERIODS } from './components/period-header';
 import './editor';
-
-const ALL_PERIODS: Period[] = ['day', 'week', 'month', 'year'];
-
-const PERIOD_LABELS: Record<Period, string> = {
-  day: 'Tag',
-  week: 'Woche',
-  month: 'Monat',
-  year: 'Jahr',
-};
 
 @customElement('solar-generation-card')
 export class SolarGenerationCard extends LitElement {
@@ -182,8 +174,8 @@ export class SolarGenerationCard extends LitElement {
     this._referenceDate = new Date();
   }
 
-  private _onPeriodChange(ev: Event): void {
-    this._period = (ev.target as HTMLSelectElement).value as Period;
+  private _onPeriodChange(period: Period): void {
+    this._period = period;
     this._referenceDate = new Date();
   }
 
@@ -193,10 +185,6 @@ export class SolarGenerationCard extends LitElement {
     }
 
     const timeZone = this.hass.config.time_zone;
-    const range = getRangeForPeriod(this._period, this._referenceDate, timeZone);
-    const nowRange = getRangeForPeriod(this._period, new Date(), timeZone);
-    const isCurrentPeriod = range.start.getTime() === nowRange.start.getTime();
-    const label = formatRangeLabel(this._period, range, this.hass.locale.language, timeZone);
     const locale = this.hass.locale.language;
     const barLabels = formatBarLabels(this._period, this._bars, locale, timeZone);
     const tooltipLabels = this._bars.map((bar) => formatBarTooltipLabel(this._period, bar, locale, timeZone));
@@ -206,26 +194,17 @@ export class SolarGenerationCard extends LitElement {
 
     return html`
       <ha-card>
-        <div class="header">
-          <div class="nav">
-            <button class="icon-button" @click=${this._goToPrevious} aria-label="Zurück">‹</button>
-            <button class="text-button" @click=${this._goToNow}>Jetzt</button>
-            <button
-              class="icon-button"
-              @click=${this._goToNext}
-              ?disabled=${isCurrentPeriod}
-              aria-label="Vor"
-            >
-              ›
-            </button>
-          </div>
-          <div class="date-label">${label}</div>
-          <select class="period-select" .value=${this._period} @change=${this._onPeriodChange}>
-            ${this._availablePeriods.map(
-              (period) => html`<option value=${period}>${PERIOD_LABELS[period]}</option>`,
-            )}
-          </select>
-        </div>
+        ${renderPeriodHeader({
+          period: this._period,
+          referenceDate: this._referenceDate,
+          availablePeriods: this._availablePeriods,
+          timeZone,
+          locale,
+          onPrevious: this._goToPrevious,
+          onNext: this._goToNext,
+          onNow: this._goToNow,
+          onPeriodChange: (period) => this._onPeriodChange(period),
+        })}
 
         ${this._entitySlots.length > 1
           ? html`
@@ -277,54 +256,9 @@ export class SolarGenerationCard extends LitElement {
     `;
   }
 
-  static styles = css`
-    .header {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 12px 16px 0;
-      color: var(--secondary-text-color);
-      font-size: 0.9rem;
-    }
-    .nav {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .date-label {
-      flex: 1;
-      text-align: center;
-    }
-    .icon-button,
-    .text-button {
-      background: none;
-      border: 1px solid var(--divider-color);
-      border-radius: 4px;
-      color: var(--primary-text-color);
-      cursor: pointer;
-      padding: 2px 8px;
-      font: inherit;
-    }
-    .icon-button:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
-    .period-select {
-      background: var(--card-background-color, #1c1c1c);
-      border: 1px solid var(--divider-color);
-      border-radius: 4px;
-      color: var(--primary-text-color);
-      font: inherit;
-      padding: 2px 4px;
-    }
-    /* Die Dropdown-Liste eines <select> wird vom Browser nativ gerendert und
-       ignoriert sonst unsere Kartenfarben (weißer Hintergrund + heller Text
-       aus dem Dark Theme = unlesbar). Chromium erlaubt es, das per Styling
-       auf <option> zu korrigieren. */
-    .period-select option {
-      background: var(--card-background-color, #1c1c1c);
-      color: var(--primary-text-color);
-    }
+  static styles = [
+    periodHeaderStyles,
+    css`
     .entity-tabs {
       display: flex;
       gap: 4px;
@@ -494,7 +428,8 @@ export class SolarGenerationCard extends LitElement {
     .message.error {
       color: var(--error-color);
     }
-  `;
+  `,
+  ];
 }
 
 declare global {

@@ -45,7 +45,113 @@ selbst und unabhängig:
 5. **Visueller Editor** — `getConfigElement`, alle Config-Optionen ✅ erledigt (mit einer
    Einschränkung, siehe Stand unten)
 6. **HACS/Release-Setup** — hacs.json verfeinern, GitHub Action (Tag `v*` → Build + Release),
-   README auf Deutsch mit Installationsanleitung ← nächster Schritt
+   README auf Deutsch mit Installationsanleitung — deckt am Ende **beide** Karten dieses Repos ab
+
+## Zweite Karte: Energiefluss (`energy-flow-card`)
+
+### Projektziel
+
+Zweite, eigenständige Lovelace-Karte im selben Repo: zeigt, woher der Hausbedarf kommt (PV
+direkt / Speicher / Netz) als Kombination aus Sankey-Fluss und Ring-Diagramm, im Hochformat.
+Vorlage: mehrfach iterativ als Skizze (Claude-Artifact) mit dem Nutzer abgestimmt, siehe finale
+Version unter https://claude.ai/artifact/BEfFYWXQ4Xz8t1p3Epb3e9 (Version 7).
+
+Gestaltung (abgestimmt):
+- PV-Kästchen oben (erhöht, damit die 3 abgehenden Flüsse an getrennten Punkten starten statt an
+  einem gemeinsamen Knoten), mit Aufteilung als 3 einzelne Mini-Labels (Name/Wert zweizeilig),
+  jeweils senkrecht über der zugehörigen Flusslinie: "geladen", "verbraucht", "eingespeist"
+- Speicher-/Netz-Kästchen darunter, je nur mit der Richtung, die nicht schon bei PV steht
+  ("entladen" bzw. "bezogen") — Doppelnennung bewusst vermieden
+- Unten: grauer Kasten (gleiche Optik wie die anderen Kästchen) mit Ring-Diagramm (Hausbedarf-
+  Zusammensetzung) + Prozent-Legende, beides im selben Kasten
+- Z-Reihenfolge wichtig: Fluss-Pfade werden zuerst gezeichnet, Kästchen/Ring danach — dadurch
+  überdecken sie die Linienenden sauber (kein sichtbarer Überstand der abgerundeten Enden)
+- Farben: PV/Speicher/Netz = orange/grün/blau (dunkler Palette-Schritt, CVD-geprüft — siehe
+  Chart-Rendering-Entscheidung der ersten Karte für den Hintergrund zur Farbwahl-Methode)
+
+### Berechnung
+
+- PV-Direktverbrauch = PV-Erzeugung − Batterie-Laden − Netzeinspeisung (auf 0 begrenzt, falls
+  durch Messungenauigkeiten leicht negativ)
+- Hausbedarf gesamt = PV-Direktverbrauch + Batterie-Entladen + Netzbezug
+
+### Abgestimmter Plan
+
+1. **Grundgerüst** — `src/energy-flow-card.ts`, `<energy-flow-card>`, `setConfig()`/
+   `getCardSize()`, Registrierung in `register.ts` ✅ erledigt
+2. **Datenschicht** — `fetchStatistics()` (bestehend, unverändert) 5× aufrufen (PV, Laden,
+   Entladen, Netzbezug, Netzeinspeisung), daraus PV-Direktverbrauch + Hausbedarf berechnen
+   ✅ erledigt (Anzeige vorerst als einfache Werteliste, Ring+Sankey folgt in Schritt 4)
+3. **Navigation/Zeiträume** — gemeinsamer Header mit der ersten Karte (siehe Entscheidung
+   „Gemeinsamer Header" unten) ✅ erledigt
+4. **Ring + Sankey rendern** — neue Datei `src/chart/energy-flow.ts`, SVG-Rendering nach Skizze
+   ✅ erledigt
+5. **Visueller Editor** — `getConfigElement`, 5 Pflicht-Entity-Picker (kein Tabs-Konzept nötig,
+   nur ein Satz Entitäten pro Karte) ✅ erledigt
+6. **HACS/Release** — gemeinsam mit der ersten Karte (Schritt 6 oben), kein doppelter Aufwand
+   ← nächster Schritt (deckt beide Karten ab)
+
+### Getroffene Entscheidungen
+
+- **Gemeinsamer Header:** Der Navigations-Header (‹ Jetzt › + Datum + Zeitraum-Dropdown) ist bei
+  beiden Karten identisch. Nutzerentscheidung: in ein gemeinsames Modul auslagern (z. B.
+  `src/components/period-header.ts`), statt den Code zu duplizieren — vermeidet künftige
+  Inkonsistenzen (z. B. falls der Ruckel-/Race-Condition-Fix der ersten Karte je nochmal
+  angepasst werden muss). ✅ umgesetzt: `src/components/period-header.ts` exportiert
+  `renderPeriodHeader()` (reine Render-Funktion, Zustand bleibt bei der jeweiligen Karte),
+  `periodHeaderStyles` (CSSResult, per `static styles = [periodHeaderStyles, css\`…\`]`
+  eingebunden) und `ALL_PERIODS`. Beide Karten (`solar-generation-card.ts`,
+  `energy-flow-card.ts`) nutzen es jetzt identisch; die alte Duplizierung in der Solar-Karte
+  wurde dabei entfernt.
+- **Ring+Sankey-Implementierung:** `src/chart/energy-flow.ts` folgt demselben Muster wie
+  `chart/bar-chart.ts` — liefert nur den SVG-*Inhalt* (`renderEnergyFlowContent()`), das
+  `<svg>`-Element selbst steht im `html`-Template der Karte. **Wichtiger Unterschied zur
+  Balken-Karte:** Hier wird bewusst *nicht* `preserveAspectRatio="none"` verwendet (kein
+  nicht-uniformes Strecken) — der Ring würde sonst oval statt rund gezeichnet. Die Karte skaliert
+  stattdessen gleichmäßig über `width: 100%; height: auto` (Standardverhalten von SVG mit
+  `viewBox`, kein CSS-Trick nötig)
+  - Balkenbreiten der 5 Flüsse: linear zwischen 4–20px, skaliert relativ zum größten der 5 Werte
+    (`strokeWidthFor()`) — dieselbe Größenordnung wie in der Skizze, aber jetzt datengetrieben
+    statt hartkodiert
+  - Farben als CSS-Variablen (`--pv-color`/`--speicher-color`/`--netz-color`) im `:host` der
+    Karte definiert, nicht direkt in `energy-flow.ts` hartkodiert — vorbereitet für eine
+    spätere Konfigurierbarkeit, auch wenn aktuell (bewusst, YAGNI) noch kein Config-Feld dafür
+    existiert
+  - Modul-Kästchen-Hintergrund: `var(--secondary-background-color, #262626)` statt eines
+    erfundenen Tokens — das ist die reale HA-Theme-Variable für Eingabefelder/Listenzeilen und
+    kommt der "Modul-Kästchen"-Optik aus der Skizze am nächsten
+- **PV-Titel/Leistung einzeilig:** Im PV-Kästchen stehen "PV" und die Erzeugung jetzt in einer
+  Zeile statt zwei (per `<tspan>`, damit Titel fett und Wert gedimmt in derselben `<text>`-Zeile
+  bleiben können). PV-Kästchen dadurch kompakter (100px statt 108px Höhe), nachgelagerte
+  y-Koordinaten (Mini-Labels, Pfad-Startpunkte) entsprechend angepasst.
+- **PV-Direktverbrauch ist rein rechnerisch, kein Sensor nötig:** Nutzer hat keinen separaten
+  Verbrauchszähler für die direkte PV-Nutzung — war aber ohnehin bereits so geplant/umgesetzt
+  (`pvDirect = PV − Laden − Einspeisung`, siehe Berechnung oben). Keine Config-Änderung nötig,
+  nur als Bestätigung dokumentiert.
+- **Editor + `getStubConfig()`:** `src/energy-flow-card-editor.ts` — gleiches `ha-form`-Muster
+  wie bei der Solar-Karte, aber ohne die dortige Slot-/Tabs-Komplexität, da nur ein fester Satz
+  von 5 Pflicht-Entitäten existiert (kein "mehrere Instanzen umschalten"-Konzept nötig).
+  `getStubConfig()` kann anders als bei der Solar-Karte **keine** Entität automatisch erraten
+  (5 spezifische Rollen — PV/Laden/Entladen/Bezug/Einspeisung — lassen sich nicht am
+  `entity_id`-Präfix unterscheiden wie `sensor.*`); die Karte startet nach dem Hinzufügen daher
+  bewusst mit leeren Entity-Feldern und einer Validierungsfehlermeldung, bis der Nutzer sie im
+  Editor auswählt.
+
+**Erledigt (zusätzlich — Kosten/Gespart-Tab):**
+- Nutzerwunsch: zweiter Tab neben dem Energiefluss-Diagramm, der Kosten/Ersparnis zeigt. Einziger
+  zusätzlicher Input: Strompreis in €/kWh (`price_per_kwh`, analog zur Solar-Karte) — keine
+  weiteren Sensoren nötig, da sich alles aus den 5 bereits vorhandenen Werten ableiten lässt
+- Berechnung: **Kosten** = Netzbezug × Preis (das, was tatsächlich fürs Netz bezahlt wurde);
+  **Gespart** = (PV-Direktverbrauch + Batterie-Entladen) × Preis (was man hätte zahlen müssen,
+  wäre diese Energie aus dem Netz gekommen). Bewusst **keine** Einspeisevergütung berücksichtigt
+  (andere Grundlage: Einspeisetarif ≠ Verbrauchspreis) — kann bei Bedarf später als eigenes Feld
+  ergänzt werden, aktuell nicht angefragt (YAGNI)
+- Darstellung als zwei Kennzahlen-Kacheln (Stat-Tiles) statt eines neuen Diagramms — passendste
+  Form laut Dataviz-Faustregel für "eine Handvoll Kennzahlen" (kein Balken-/Liniendiagramm nötig)
+- Tab-Leiste erscheint nur, wenn `price_per_kwh` gesetzt ist (sonst nichts anzuzeigen); wird
+  `price_per_kwh` nachträglich wieder entfernt, während der Kosten-Tab aktiv ist, springt die
+  Karte automatisch zurück zur Energiefluss-Ansicht (kein toter Tab-Zustand)
+- Build, ESLint und `tsc --noEmit` laufen fehlerfrei; Test in HA steht noch aus
 
 ## Getroffene Entscheidungen
 
