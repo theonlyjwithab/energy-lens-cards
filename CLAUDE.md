@@ -146,11 +146,21 @@ Gestaltung (abgestimmt):
   wäre diese Energie aus dem Netz gekommen). Bewusst **keine** Einspeisevergütung berücksichtigt
   (andere Grundlage: Einspeisetarif ≠ Verbrauchspreis) — kann bei Bedarf später als eigenes Feld
   ergänzt werden, aktuell nicht angefragt (YAGNI)
-- Darstellung als zwei Kennzahlen-Kacheln (Stat-Tiles) statt eines neuen Diagramms — passendste
-  Form laut Dataviz-Faustregel für "eine Handvoll Kennzahlen" (kein Balken-/Liniendiagramm nötig)
 - Tab-Leiste erscheint nur, wenn `price_per_kwh` gesetzt ist (sonst nichts anzuzeigen); wird
   `price_per_kwh` nachträglich wieder entfernt, während der Kosten-Tab aktiv ist, springt die
   Karte automatisch zurück zur Energiefluss-Ansicht (kein toter Tab-Zustand)
+- **Überarbeitet nach Nutzerwunsch:** Statt zwei Kennzahlen-Kacheln nutzt der Kosten-Tab jetzt
+  **dieselbe** Ring+Sankey-Grafik wie die Energiefluss-Ansicht. Dafür wurde
+  `renderEnergyFlowContent()` von einem festen `locale`-Parameter auf einen generischen
+  `formatValue: (value: number) => string`-Callback umgestellt — dieselbe Rendering-Funktion
+  zeigt so wahlweise kWh- oder €-Werte, ganz ohne Sonderfall im Rendering-Code. Neu:
+  `scaleEnergyFlowTotals()` multipliziert jeden der 5 Flüsse mit dem Strompreis; die
+  Ring-Prozentanteile bleiben dabei automatisch korrekt, weil eine gleichmäßige Skalierung die
+  Verhältnisse zwischen den Werten nicht verändert
+- **Bewusste Vereinfachung:** Alle Flüsse (auch PV→Netz/Einspeisung) werden einheitlich mit dem
+  einen Verbrauchspreis bewertet, nicht mit einem separaten (meist niedrigeren) Einspeisetarif —
+  exakt das, was der Nutzer angefragt hat ("dasselbe Diagramm", ein Eingabewert). Eine echte
+  Einspeisevergütung wäre inhaltlich genauer, aber nicht angefragt (YAGNI)
 - Build, ESLint und `tsc --noEmit` laufen fehlerfrei; Test in HA steht noch aus
 
 ## Getroffene Entscheidungen

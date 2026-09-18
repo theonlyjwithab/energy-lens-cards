@@ -28,9 +28,25 @@ function strokeWidthFor(value: number, maxValue: number): number {
   return MIN_STROKE + (Math.max(value, 0) / maxValue) * (MAX_STROKE - MIN_STROKE);
 }
 
-function formatKwh(value: number, locale: string): string {
+export function formatKwh(value: number, locale: string): string {
   const number = new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(value);
   return `${number} kWh`;
+}
+
+/** Multipliziert jeden Fluss mit einem Faktor (z. B. Strompreis) – die
+ * Prozentanteile im Ring bleiben dabei automatisch gleich, da eine
+ * gleichmäßige Skalierung die Verhältnisse nicht verändert. So lässt sich
+ * dasselbe Diagramm unverändert für eine Kosten-Ansicht wiederverwenden. */
+export function scaleEnergyFlowTotals(totals: EnergyFlowTotals, factor: number): EnergyFlowTotals {
+  return {
+    pv: totals.pv * factor,
+    charge: totals.charge * factor,
+    discharge: totals.discharge * factor,
+    gridImport: totals.gridImport * factor,
+    gridExport: totals.gridExport * factor,
+    pvDirect: totals.pvDirect * factor,
+    hausbedarf: totals.hausbedarf * factor,
+  };
 }
 
 /**
@@ -42,8 +58,15 @@ function formatKwh(value: number, locale: string): string {
  *
  * Layout-Koordinaten sind bewusst fest (kein responsives Neuberechnen) –
  * das ganze SVG wird über sein `viewBox` gleichmäßig skaliert, siehe Karte.
+ *
+ * `formatValue` entkoppelt die Darstellung von der Einheit – dieselbe
+ * Funktion rendert sowohl die kWh-Ansicht als auch (mit skalierten Totals +
+ * Währungsformat) die Kosten-Ansicht.
  */
-export function renderEnergyFlowContent(totals: EnergyFlowTotals, locale: string): SVGTemplateResult {
+export function renderEnergyFlowContent(
+  totals: EnergyFlowTotals,
+  formatValue: (value: number) => string,
+): SVGTemplateResult {
   const { pv, charge, discharge, gridImport, gridExport, pvDirect, hausbedarf } = totals;
 
   const maxFlow = Math.max(pvDirect, charge, gridExport, discharge, gridImport, 0.001);
@@ -72,22 +95,22 @@ export function renderEnergyFlowContent(totals: EnergyFlowTotals, locale: string
     <rect x="20" y="20" width="280" height="100" rx="8" fill="var(--efc-surface-color)" />
     <text x="34" y="44">
       <tspan class="efc-label">PV</tspan>
-      <tspan class="efc-value" dx="10">${formatKwh(pv, locale)} Erzeugung</tspan>
+      <tspan class="efc-value" dx="10">${formatValue(pv)} Erzeugung</tspan>
     </text>
     <text x="85" y="90" text-anchor="middle" class="efc-mini-name">geladen</text>
-    <text x="85" y="104" text-anchor="middle" class="efc-mini-value">${formatKwh(charge, locale)}</text>
+    <text x="85" y="104" text-anchor="middle" class="efc-mini-value">${formatValue(charge)}</text>
     <text x="160" y="90" text-anchor="middle" class="efc-mini-name">verbraucht</text>
-    <text x="160" y="104" text-anchor="middle" class="efc-mini-value">${formatKwh(pvDirect, locale)}</text>
+    <text x="160" y="104" text-anchor="middle" class="efc-mini-value">${formatValue(pvDirect)}</text>
     <text x="235" y="90" text-anchor="middle" class="efc-mini-name">eingespeist</text>
-    <text x="235" y="104" text-anchor="middle" class="efc-mini-value">${formatKwh(gridExport, locale)}</text>
+    <text x="235" y="104" text-anchor="middle" class="efc-mini-value">${formatValue(gridExport)}</text>
 
     <rect x="20" y="200" width="125" height="56" rx="8" fill="var(--efc-surface-color)" />
     <text x="32" y="222" class="efc-label">Speicher</text>
-    <text x="32" y="240" class="efc-value">entladen ${formatKwh(discharge, locale)}</text>
+    <text x="32" y="240" class="efc-value">entladen ${formatValue(discharge)}</text>
 
     <rect x="175" y="200" width="125" height="56" rx="8" fill="var(--efc-surface-color)" />
     <text x="187" y="222" class="efc-label">Netz</text>
-    <text x="187" y="240" class="efc-value">bezogen ${formatKwh(gridImport, locale)}</text>
+    <text x="187" y="240" class="efc-value">bezogen ${formatValue(gridImport)}</text>
 
     <rect x="50" y="302" width="220" height="296" rx="8" fill="var(--efc-surface-color)" />
     <g transform="translate(160,384) rotate(-90)">
@@ -117,7 +140,7 @@ export function renderEnergyFlowContent(totals: EnergyFlowTotals, locale: string
         stroke-dashoffset="${-(segDirect + segDischarge)}"
       />
     </g>
-    <text x="160" y="378" text-anchor="middle" class="efc-ring-value">${formatKwh(hausbedarf, locale)}</text>
+    <text x="160" y="378" text-anchor="middle" class="efc-ring-value">${formatValue(hausbedarf)}</text>
     <text x="160" y="395" text-anchor="middle" class="efc-ring-label">Hausbedarf</text>
 
     <circle cx="76" cy="485" r="5" fill="var(--pv-color)" />

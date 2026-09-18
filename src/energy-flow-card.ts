@@ -5,7 +5,14 @@ import { fetchStatistics, type StatBar } from './data/statistics';
 import { getRangeForPeriod, shiftReferenceDate, RECORDER_PERIOD } from './utils/period';
 import type { DateRange } from './utils/time';
 import { renderPeriodHeader, periodHeaderStyles, ALL_PERIODS } from './components/period-header';
-import { renderEnergyFlowContent, ENERGY_FLOW_VIEW_WIDTH, ENERGY_FLOW_VIEW_HEIGHT, type EnergyFlowTotals } from './chart/energy-flow';
+import {
+  renderEnergyFlowContent,
+  scaleEnergyFlowTotals,
+  formatKwh,
+  ENERGY_FLOW_VIEW_WIDTH,
+  ENERGY_FLOW_VIEW_HEIGHT,
+  type EnergyFlowTotals,
+} from './chart/energy-flow';
 import './energy-flow-card-editor';
 
 const REQUIRED_ENTITY_FIELDS = [
@@ -226,41 +233,22 @@ export class EnergyFlowCard extends LitElement {
           : this._loading && !this._totals
             ? html`<div class="message">Lade Daten…</div>`
             : this._totals
-              ? this._view === 'cost' && price != null
-                ? this._renderCostView(this._totals, price, costFormat)
-                : html`
-                    <div class="chart">
-                      <svg
-                        viewBox="0 0 ${ENERGY_FLOW_VIEW_WIDTH} ${ENERGY_FLOW_VIEW_HEIGHT}"
-                        style="width: 100%; height: auto; display: block;"
-                      >
-                        ${renderEnergyFlowContent(this._totals, locale)}
-                      </svg>
-                    </div>
-                  `
+              ? html`
+                  <div class="chart">
+                    <svg
+                      viewBox="0 0 ${ENERGY_FLOW_VIEW_WIDTH} ${ENERGY_FLOW_VIEW_HEIGHT}"
+                      style="width: 100%; height: auto; display: block;"
+                    >
+                      ${this._view === 'cost' && price != null
+                        ? renderEnergyFlowContent(scaleEnergyFlowTotals(this._totals, price), (value) =>
+                            costFormat.format(value),
+                          )
+                        : renderEnergyFlowContent(this._totals, (value) => formatKwh(value, locale))}
+                    </svg>
+                  </div>
+                `
               : html``}
       </ha-card>
-    `;
-  }
-
-  private _renderCostView(totals: FlowTotals, price: number, costFormat: Intl.NumberFormat) {
-    const gridCost = totals.gridImport * price;
-    const selfSupplied = totals.pvDirect + totals.discharge;
-    const savings = selfSupplied * price;
-
-    return html`
-      <div class="stat-row">
-        <div class="stat-tile">
-          <div class="stat-label">Kosten</div>
-          <div class="stat-value">${costFormat.format(gridCost)}</div>
-          <div class="stat-sub">Netzbezug ${totals.gridImport.toFixed(1)} kWh</div>
-        </div>
-        <div class="stat-tile">
-          <div class="stat-label">Gespart</div>
-          <div class="stat-value">${costFormat.format(savings)}</div>
-          <div class="stat-sub">Eigenverbrauch ${selfSupplied.toFixed(1)} kWh</div>
-        </div>
-      </div>
     `;
   }
 
@@ -306,32 +294,6 @@ export class EnergyFlowCard extends LitElement {
       }
       .chart {
         padding: 8px 16px 16px;
-      }
-      .stat-row {
-        display: flex;
-        gap: 12px;
-        padding: 12px 16px 16px;
-      }
-      .stat-tile {
-        flex: 1;
-        background: var(--efc-surface-color);
-        border-radius: 8px;
-        padding: 12px 14px;
-      }
-      .stat-label {
-        font-size: 0.8rem;
-        color: var(--secondary-text-color);
-        margin-bottom: 4px;
-      }
-      .stat-value {
-        font-size: 1.4rem;
-        font-weight: 700;
-        color: var(--primary-text-color);
-      }
-      .stat-sub {
-        font-size: 0.75rem;
-        color: var(--secondary-text-color);
-        margin-top: 2px;
       }
       .message {
         padding: 16px 0;
